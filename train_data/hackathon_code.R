@@ -134,11 +134,67 @@ test_cd4=read.table("cd4_gene_expr_train.txt", check.names=F)
 test_cd8=read.table("cd8_gene_expr_train.txt", check.names=F)
 test_nasal_gene=read.table("nasal_gene_expr_train.txt", check.names=F)
 
-#subest out useful columns for each data file
-head(colnames(test_cd19))
+#subset out useful columns for each data file
 test_cd19=t(test_cd19)
 test_cd4=t(test_cd4)
 test_cd8=t(test_cd8)
 test_nasal_gene=t(test_nasal_gene)
 
-test_cd19_features=subset(test_cd19, select=rownames(sig_cor_severe_cd19))
+head(colnames(test_cd19))
+rownames(sig_cor_severe_cd19)
+test_cd19_features=subset(test_cd19, select=rownames(sig_cor_severe_cd19))  #subscript out of bounds, delete column for severity score now
+test_cd19_features=subset(test_cd19, select=rownames(sig_cor_severe_cd19[2:28,]))
+head(test_cd19_features)
+
+rownames(sig_cor_severe_cd8)
+test_cd8_features=subset(test_cd8, select=rownames(sig_cor_severe_cd8[2:15,]))
+head(test_cd8_features)
+
+rownames(sig_cor_severe_cd4)
+test_cd4_features=subset(test_cd4, select=rownames(sig_cor_severe_cd4[2:48,]))
+head(test_cd4_features)
+
+rownames(sig_cor_severe_nasal_gene)
+test_nasal_gene_features=subset(test_nasal_gene, select=rownames(sig_cor_severe_nasal_gene[2:47,]))
+head(test_nasal_gene_features)
+
+#use linear regression models to make predictions on test data
+cd19_predict=predict(fit_cd19, data.frame(test_cd19_features)) #need to coerce new data table into dataframe - checked to make sure no info lost
+cd4_predict=predict(fit_cd4, data.frame(test_cd4_features))
+cd8_predict=predict(fit_cd8, data.frame(test_cd8_features))
+nasal_gene_predict=predict(fit_nasal_gene, data.frame(test_nasal_gene_features))
+
+head(cd19_predict)
+cd4_cd19=rbind(cd4_predict, cd19_predict)
+cd4_cd19
+cd4_predict
+cd19_predict
+
+write.table(cd4_predict, file="cd4_predictions.txt")
+write.table(cd8_predict, file="cd8_predictions.txt")
+write.table(cd19_predict, file="cd19_predictions.txt")
+write.table(nasal_gene_predict, file="nasal_gene_predictions.txt")
+
+cd4_predict=read.table("cd4_predictions.txt")
+head(test)
+cd8_predict=read.table("cd8_predictions.txt")
+cd19_predict=read.table("cd19_predictions.txt")
+nasal_gene_predict=read.table("nasal_gene_predictions.txt")
+
+
+cd4_cd8=merge(cd4_predict, cd8_predict, by=0, all.x=T, all.y=T)
+head(cd4_cd8)
+rownames(cd4_cd8)=cd4_cd8$Row.names
+cd4_cd8=cd4_cd8[,-c(1)]
+cd4_8_19=merge(cd4_cd8, cd19_predict, by=0, all.x=T, all.y=T)
+head(cd4_8_19)
+rownames(cd4_8_19)=cd4_8_19$Row.names
+cd4_8_19=cd4_8_19[,-c(1)]
+merged_predict=merge(cd4_8_19, nasal_gene_predict, by=0, all.x=T, all.y=T)
+rownames(merged_predict)=merged_predict$Row.names
+merged_predict=merged_predict[,-c(1)]
+colnames(merged_predict)=c("cd4", "cd8", "cd19", "nasal_gene")
+predict_average=rowMeans(merged_predict, na.rm=T)
+test=cbind.data.frame(merged_predict, predict_average)
+merged_predict=test
+head(merged_predict)
