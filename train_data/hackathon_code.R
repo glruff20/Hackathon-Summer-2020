@@ -237,3 +237,8 @@ not_nasal_cd4=subset(not_nasal_gene, !(rownames(not_nasal_gene) %in% rownames(cd
 severity_no_data=not_nasal_cd4 #2 very low severity scores and 1 high severity score - doesnt seem very predictive...
 mean(as.numeric(paste(severity_no_data$V1))) # mean is 3.1768 for patients with no data
   #put this data in by hand, since still need to add nasal_microbio data for one of the test patients
+
+#when put this data in, replaced my_predictions2.csv
+
+#issue - still havent included nasal_microbio data into regression model
+
