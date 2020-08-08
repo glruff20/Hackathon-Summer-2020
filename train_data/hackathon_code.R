@@ -78,9 +78,7 @@ sig_cor_severe_cd8[,1]
 
 cor_severe_cd4=cor(severe_cd4, use="pairwise.complete.obs")
 summary(cor_severe_cd4[,1])
-sig_cor_severe_cd4=subset(cor_severe_cd4, cor_severe_cd4[1,] < -0.41 | cor_severe_cd4[1,] > 0.45)
 sig_cor_severe_cd4=subset(cor_severe_cd4, cor_severe_cd4[1,] < -0.35 | cor_severe_cd4[1,] > 0.4)
-
 dim(sig_cor_severe_cd4)
 rownames(sig_cor_severe_cd4)
 sig_cor_severe_cd4[,1]
@@ -108,7 +106,7 @@ sig_cor_severe_nasal_gene[,1]
 
 cd4_features=subset(severe_cd4, select=rownames(sig_cor_severe_cd4))
 cd8_features=subset(severe_cd8, select=rownames(sig_cor_severe_cd8))
-sig_cor_severe_cd19=sig_cor_severe_cd19[1:28,] #15th row was NA, not sure why, deleted it
+sig_cor_severe_cd19=sig_cor_severe_cd19[1:28,] #29th row was NA, not sure why, deleted it
 cd19_features=subset(severe_cd19, select=rownames(sig_cor_severe_cd19))
 nasal_gene_features=subset(severe_nasal_gene, select=rownames(sig_cor_severe_nasal_gene))
 
