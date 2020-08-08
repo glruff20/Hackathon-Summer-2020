@@ -241,4 +241,6 @@ mean(as.numeric(paste(severity_no_data$V1))) # mean is 3.1768 for patients with 
 #when put this data in, replaced my_predictions2.csv
 
 #issue - still havent included nasal_microbio data into regression model
+#another issue - probably want to do a regression with all variables together, that way more important markers will be represented that way in regression?
+#could always just add more features to this method too, see if it works any better
 
