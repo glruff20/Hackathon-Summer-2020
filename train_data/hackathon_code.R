@@ -244,3 +244,5 @@ mean(as.numeric(paste(severity_no_data$V1))) # mean is 3.1768 for patients with 
 #another issue - probably want to do a regression with all variables together, that way more important markers will be represented that way in regression?
 #could always just add more features to this method too, see if it works any better
 
+save(prediction, cd4_predict, cd8_predict, cd19_predict, nasal_gene_predict, nasal_predict_median, cd4_features, cd8_features, cd19_features, nasal_gene_features, fit_cd19, fit_cd4, fit_cd8, fit_nasal_gene, file="hackathon.rda")
+
