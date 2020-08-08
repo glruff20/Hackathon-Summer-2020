@@ -212,13 +212,6 @@ write.table(test2, file="my_predictions.csv", sep=",") #first draft, problems be
 #figure out how to make nasal gene predictions better - just use median?
 #how to use nasal microbio dataset??
 
-
-histogram(test$predict_average)
-histogram(test$cd4)
-mean(test$nasal_gene, na.rm=T)
-median(test$nasal_gene, na.rm=T)
-test$nasal_gene
-
 #first attempt to fix - just use median for nasal gene predictions (only for patients that have nasal gene data)
 nasal_predict_median=cbind.data.frame(nasal_gene_predict, rep(median(test$nasal_gene, na.rm=T), 42))
 
@@ -237,3 +230,10 @@ head(test2)
 
 write.table(test2, file="my_predictions2.csv", sep=",") #use median of nasal_gene table, still missing 3 patients severity scores
 
+#fix missing patients, determine what patients in training data dont have data, calculate average of those, plug in that average for patients in test data
+
+not_nasal_gene=subset(severity_score, !(rownames(severity_score) %in% rownames(nasal_gene)))
+not_nasal_cd4=subset(not_nasal_gene, !(rownames(not_nasal_gene) %in% rownames(cd4_gene)))
+severity_no_data=not_nasal_cd4 #2 very low severity scores and 1 high severity score - doesnt seem very predictive...
+mean(as.numeric(paste(severity_no_data$V1))) # mean is 3.1768 for patients with no data
+  #put this data in by hand, since still need to add nasal_microbio data for one of the test patients
