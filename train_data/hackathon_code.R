@@ -61,7 +61,7 @@ severe_cd8[,1]=as.numeric(paste(severe_cd8[,1]))
 severe_nasal_gene[,1]=as.numeric(paste(severe_nasal_gene[,1]))
 severe_nasal_micro[,1]=as.numeric(paste(severe_nasal_micro[,1]))
 
-#calculate cors for each gene in gene expr tables, subset out top 12 or so
+#calculate correlations for each gene in gene expr tables, subset out top genes to use in regression model
 cor_severe_cd19=cor(severe_cd19, use="pairwise.complete.obs")
 summary(cor_severe_cd19[,1])
 sig_cor_severe_cd19=subset(cor_severe_cd19, cor_severe_cd19[1,] < -0.43 | cor_severe_cd19[1,] > 0.43)
