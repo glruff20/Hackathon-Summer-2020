@@ -114,6 +114,8 @@ fit_cd4=lm(cd4_features$severity_score ~., data=cd4_features)
 summary(fit_cd4)
 plot(fit_cd4)
 
+
+colnames(cd8_features)=c("severity_score", paste("cd8", colnames(cd8_features[,-c(1)]), sep="_"))
 fit_cd8=lm(cd8_features$severity_score ~., data=cd8_features)
 summary(fit_cd8)
 

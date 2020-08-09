@@ -207,16 +207,21 @@ write.table(test2, file="my_predictions3.csv", sep=",") #first draft, problems b
 predict(step.model, data.frame(test5))
 
 step.model$model
-test5=subset(merged_test_data, select=colnames(test[,-c(1)]))
+test5=subset(merged_test_data, select=rownames(sig_cor_severe_cd8[-c(1),]))
 head(test5)
 
 #get rid of NA values in this dataset, replace with median cell values
 library(tidyr)
-test_col_medians <- lapply(test5, median, na.rm = TRUE)
-test5 <- replace_na(test5, test_col_medians)
+test_col_medians <- lapply(merged_test_data, median, na.rm = TRUE)
+test5 <- replace_na(merged_test_data, test_col_medians)
 head(test5)
 merged_test_features_nona=test1
 
 
+pred.r.squared <- pred_r_squared(fit_nasal_gene)
+pred.r.squared
 
+predict(fit_cd8, data.frame(test5))
+predictions_cd8=predict(fit_cd8, data.frame(test5))
+#these look pretty good, big negative is a lot of filler values from blank values
 
