@@ -116,6 +116,7 @@ library(DAAG) #use for cross validation testing
 
 fit_cd4=lm(cd4_features$severity_score ~., data=cd4_features)
 summary(fit_cd4)
+plot(fit_cd4)
 
 fit_cd8=lm(cd8_features$severity_score ~., data=cd8_features)
 summary(fit_cd8)
@@ -246,3 +247,135 @@ mean(as.numeric(paste(severity_no_data$V1))) # mean is 3.1768 for patients with 
 
 save(prediction, cd4_predict, cd8_predict, cd19_predict, nasal_gene_predict, nasal_predict_median, cd4_features, cd8_features, cd19_features, nasal_gene_features, fit_cd19, fit_cd4, fit_cd8, fit_nasal_gene, file="hackathon.rda")
 
+#combine all data into a table, colnames prefix is cell type
+head(severe_nasal_micro[,1:5])
+colnames(severe_cd19)=c("severity_score", paste("cd19", colnames(severe_cd19[,-c(1)]), sep="_"))
+colnames(severe_cd4)=c("severity_score", paste("cd4", colnames(severe_cd4[,-c(1)]), sep="_"))
+colnames(severe_cd8)=c("severity_score", paste("cd8", colnames(severe_cd8[,-c(1)]), sep="_"))
+colnames(severe_nasal_gene)=c("severity_score", paste("nasal", colnames(severe_nasal_gene[,-c(1)]), sep="_"))
+colnames(severe_nasal_micro)=c("severity_score", paste("nasal", colnames(severe_nasal_micro[,-c(1)]), sep="_"))
+
+test=merge(severe_cd19, severe_cd4[,-c(1)], by=0, all.x=T, all.y=T)
+head(test2[,1:5])
+rownames(test)=test$Row.names
+test2=merge(test[,-c(1)], severe_cd8[,-c(1)], by=0, all.x=T, all.y=T)
+rownames(test2)=test2$Row.names
+test3=merge(test2[,-c(1)], severe_nasal_gene[,-c(1)], by=0, all.x=T, all.y=T)
+rownames(test3)=test3$Row.names
+test4=merge(test3[,-c(1)], severe_nasal_micro[,-c(1)], by=0, all.x=T, all.y=T)
+rownames(test4)=test4$Row.names
+test4=test4[,-c(1)]
+head(test4[,1:5])
+test4[1,]
+
+merged_data=test4 #severity is first column, rest of columns is rest of data
+
+#issue - only have severity scores for patients w/ cd19 data
+severe_cd19[,1]
+test=merge(severe_cd19[,1:2], severe_cd4[,1:2], by=0, all.x=T, all.y=T)
+rownames(test)=test$Row.names
+test=test[,-c(1,3,5)]
+test
+test2=merge(test, severe_cd8[,1:2], by=0, all.x=T, all.y=T)
+rownames(test2)=test2$Row.names
+test2=test2[,-c(1,5)]
+test2
+test3=merge(test2, severe_nasal_gene[,1:2], by=0, all.x=T, all.y=T)
+rownames(test3)=test3$Row.names
+test3
+test3=test3[,-c(1,6)]
+test4=merge(test3, severe_nasal_micro[,1:2], by=0, all.x=T, all.y=T)
+rownames(test4)=test4$Row.names
+test4=test4[,-c(1,7)]
+test4
+
+merged_severity_score=test4
+test4=merge(merged_severity_score, rowMeans(merged_severity_score, na.rm=T), by=0, all.x=T, all.y=T)
+rownames(test4)=test4$Row.names
+test4=test4[,-c(1)]
+test4
+merged_severity_score=test4
+
+head(merged_data[,1:5])
+test=cbind.data.frame(merged_severity_score[,6], merged_data)
+head(test[,1:5])
+test=test[,-c(2)]
+colnames(test)=c("severity_score", colnames(test[,-c(1)]))
+
+merged_data=test
+
+#calculate correlations for each gene in gene expr tables, subset out top genes to use in regression model
+cor_merged=cor(merged_data, use="pairwise.complete.obs")
+summary(abs(cor_merged[,1]))
+quantile(abs(cor_merged[,1]), 0.999, na.rm=T)
+
+sig_cor_merged=subset(cor_merged, abs(cor_merged[1,]) > 0.55)
+dim(sig_cor_merged)
+rownames(sig_cor_merged)
+sig_cor_merged[,1]
+
+
+merged_features=subset(merged_data, select=rownames(sig_cor_merged))
+head(merged_features)
+
+fit_merged=lm(merged_features$severity_score ~., data=merged_features)
+summary(fit_merged)
+plot(fit_cd4)
+
+#problem - lots of NA's, would only be able to predict severity for patients w/ data for cd4 or cd8
+#select 10 features from each cell type to use, combine those into table
+
+rownames(sig_cor_severe_cd19)=c("severity_score", paste("cd19", rownames(sig_cor_severe_cd19[-c(1),]), sep="_"))
+rownames(sig_cor_severe_cd4)=c("severity_score", paste("cd4", rownames(sig_cor_severe_cd4[-c(1),]), sep="_"))
+rownames(sig_cor_severe_cd8)=c("severity_score", paste("cd8", rownames(sig_cor_severe_cd8[-c(1),]), sep="_"))
+rownames(sig_cor_severe_nasal_gene)=c("severity_score", paste("nasal", rownames(sig_cor_severe_nasal_gene[-c(1),]), sep="_"))
+
+
+rownames(sig_cor_severe_cd8)
+test_features=subset(merged_data, select=c(rownames(sig_cor_severe_cd19[1:28,]), rownames(sig_cor_severe_cd4[-c(1),]), rownames(sig_cor_severe_cd8[-c(1),]), rownames(sig_cor_severe_nasal_gene[-c(1),])))
+head(test_features)
+
+fit_merged=lm(test_features$severity_score ~., data=test_features)
+summary(fit_merged)
+
+
+#replace blank values with median score that gene
+library(tidyr)
+col_means <- lapply(test_features, median, na.rm = TRUE)
+test1 <- replace_na(test_features, col_means)
+head(test1)
+test_features_nona=test1
+
+fit_merged=lm(test_features_nona$severity_score ~., data=test_features_nona)
+summary(fit_merged)
+
+merged_cor=cor(test_features_nona, use="pairwise.complete.obs")
+summary(abs(merged_cor[,1]))
+quantile(abs(merged_cor[,1]), 0.85)
+
+
+sig_cor_merged=subset(merged_cor, abs(merged_cor[1,]) > 0.361)  #has the highest adjusted r-squared value
+dim(sig_cor_merged)
+rownames(sig_cor_merged)
+sig_cor_merged[,1]
+
+
+test=subset(test_features_nona, select=rownames(sig_cor_merged))
+head(test)
+
+fit_merged=lm(severity_score ~., data=test)
+summary(fit_merged)
+plot(fit_merged)
+plot(fit_merged$residuals)
+
+library(DAAG)
+
+cross_v=cv.lm(test, fit_merged, m=3)
+summary(cross_v)
+head(cross_v)
+cross_v[,c(1,62:63)]
+
+#cross validation looks pretty good, do predictions with this new model
+
+
+#after do these predictions, add in the nasal_microbio data
