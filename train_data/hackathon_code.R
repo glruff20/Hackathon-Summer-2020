@@ -354,7 +354,7 @@ summary(abs(merged_cor[,1]))
 quantile(abs(merged_cor[,1]), 0.85)
 
 
-sig_cor_merged=subset(merged_cor, abs(merged_cor[1,]) > 0.361)  #has the highest adjusted r-squared value
+sig_cor_merged=subset(merged_cor, abs(merged_cor[1,]) > 0.405)  #has the highest adjusted r-squared value
 dim(sig_cor_merged)
 rownames(sig_cor_merged)
 sig_cor_merged[,1]
@@ -365,8 +365,13 @@ head(test)
 
 fit_merged=lm(severity_score ~., data=test)
 summary(fit_merged)
+
+fit_test=lm(severity_score ~., data=sig_features)
+summary(fit_merged)
 plot(fit_merged)
 plot(fit_merged$residuals)
+
+sig_features=test
 
 library(DAAG)
 
@@ -375,7 +380,91 @@ summary(cross_v)
 head(cross_v)
 cross_v[,c(1,62:63)]
 
-#cross validation looks pretty good, do predictions with this new model
+pr=residuals(fit_merged)/(1-lm.influence(fit_merged)$hat)
+press=sum(pr^2)
+
+my.anova=anova(fit_merged)
+tss=sum(my.anova$`Sum Sq`)
+pred.r.square=1-(press/(tss))
+pred.r.square
+#cross validation looks pretty good, need to add in nasal_microbio data
+#for microbio data, just do 1's and 0's at first
+
+#turn nasal micro data set into binary, 1 or 0
+head(severe_nasal_micro[,1:5])
+test=severe_nasal_micro
+test[test>0.0000001] = 1
+head(test[,1:5])
+nasal_micro_bi=cbind.data.frame(severe_nasal_micro[,1], test[,-c(1)])
+colnames(nasal_micro_bi)=c("severity_score", colnames(nasal_micro_bi[,-c(1)]))
+head(nasal_micro_bi[,1:10])
+
+#merge nasal micro into big dataset from before
+
+head(merged_data[,1:5])
+test4=merge(test3[,-c(1)], nasal_micro_bi[,-c(1)], by=0, all.x=T, all.y=T)
+rownames(test4)=test4$Row.names
+test4=test4[,-c(1)]
+
+test=cbind.data.frame(merged_severity_score[,6], test4)
+head(test[,1:5])
+test=test[,-c(2)]
+colnames(test)=c("severity_score", colnames(test[,-c(1)]))
+
+merged_bi_nasal=test
+tail(merged_bi_nasal[,24650:24658])
+
+#calculate correlations for nasal_micro dataset
+#take out top 20 or so genes
+
+cor_nasal_micro=cor(nasal_micro_bi, use="pairwise.complete.obs")
+summary(abs(cor_nasal_micro[,1]))
+quantile(abs(cor_nasal_micro[,1]), 0.87, na.rm=T)
+sig_cor_nasal_micro=subset(cor_nasal_micro, abs(cor_nasal_micro[1,]) > 0.19)
+dim(sig_cor_nasal_micro)
+rownames(sig_cor_nasal_micro)
+sig_cor_severe_nasal_gene[,1]
+
+test_features1=subset(merged_bi_nasal, select=c(rownames(sig_cor_severe_cd19[1:28,]), rownames(sig_cor_severe_cd4[-c(1),]), rownames(sig_cor_severe_cd8[-c(1),]), rownames(sig_cor_severe_nasal_gene[-c(1),]), rownames(sig_cor_nasal_micro[-c(1),])))
+head(test_features1)
+
+head(test_features1[,1:135])
+col_median=lapply(test_features1[,1:135], median, na.rm=T)
+test6=replace_na(test_features1[,1:135], col_median)
+###may need to add replacements to NA's in the microbio columns
+head(test6)
+test7=cbind.data.frame(test6, test_features1[,136:152])
+head(test7)
+test_features_nona1=test7
 
 
-#after do these predictions, add in the nasal_microbio data
+merged_cor1=cor(test_features_nona1, use="pairwise.complete.obs")
+summary(abs(merged_cor1[,1]))
+quantile(abs(merged_cor1[,1]), 0.85)
+
+sig_cor_merged1=subset(merged_cor1, abs(merged_cor1[1,]) > 0.355)  #has the highest adjusted r-squared value
+dim(sig_cor_merged1)
+rownames(sig_cor_merged1)
+sig_cor_merged[,1]
+
+
+test=subset(test_features_nona1, select=rownames(sig_cor_merged1))
+head(test)
+
+fit_merged1=lm(severity_score ~., data=test)
+summary(fit_merged1)
+
+###the top adjusted p value had no features for nasal microbiome data
+###there is one patient in the test data taht only has nasal microbio data
+### for them maybe make a separate regression model for only microbio data
+
+##try using stepwise regression to pick best regression model from dataframes
+
+test_features_nona1 #150 features correlated with severity score
+library(MASS)
+full_model=lm(severity_score ~.,data=test_features_nona1)
+step.model=stepAIC(full_model, direction="both", trace=F)
+
+library(caret)
+train.control=trainControl(method="cv", number=10)
+step.model=train(severity_score~., preProcess(), data=test_features_nona1, method="leapSeq", trControl=train.control)
