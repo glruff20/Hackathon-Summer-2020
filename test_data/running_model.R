@@ -217,4 +217,6 @@ test5 <- replace_na(test5, test_col_medians)
 head(test5)
 merged_test_features_nona=test1
 
-        
+
+
+
