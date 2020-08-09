@@ -168,6 +168,8 @@ test_predictions
 test5=cbind.data.frame(test_predictions, test_predictions)
 test5
 test_predictions=test5
+
+
 #create functions to calculate predicted r-squared value for linear regressions
 pred_r_squared <- function(linear.model) {
   lm.anova <- anova(linear.model)
@@ -186,8 +188,6 @@ PRESS <- function(linear.model) {
 pred.r.squared <- pred_r_squared(fit_merged)
 pred.r.squared
 
-
-
 ###match predictions up to prediction file
 prediction=read.table("prediction.csv", sep=",")
 head(prediction)
@@ -200,3 +200,21 @@ test2=cbind.data.frame(test$test_predictions, test$Row.names)
 head(test2)
 
 write.table(test2, file="my_predictions3.csv", sep=",") #first draft, problems below
+
+
+#with step.model - from stepAIC - predicted r squared good, predictions awful...?
+
+predict(step.model, data.frame(test5))
+
+step.model$model
+test5=subset(merged_test_data, select=colnames(test[,-c(1)]))
+head(test5)
+
+#get rid of NA values in this dataset, replace with median cell values
+library(tidyr)
+test_col_medians <- lapply(test5, median, na.rm = TRUE)
+test5 <- replace_na(test5, test_col_medians)
+head(test5)
+merged_test_features_nona=test1
+
+        

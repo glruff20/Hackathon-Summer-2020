@@ -462,9 +462,24 @@ summary(fit_merged1)
 
 test_features_nona1 #150 features correlated with severity score
 library(MASS)
-full_model=lm(severity_score ~.,data=test_features_nona1)
+full_model=lm(severity_score ~.,data=test)
 step.model=stepAIC(full_model, direction="both", trace=F)
+summary(step.model)
+
+pred.r.squared <- pred_r_squared(step.model)
+pred.r.squared
 
 library(caret)
 train.control=trainControl(method="cv", number=10)
-step.model=train(severity_score~., preProcess(), data=test_features_nona1, method="leapSeq", trControl=train.control)
+step.model=train(severity_score~., data=test_features_nona, method="leapSeq", trControl=train.control)
+step.model$results
+step.model$bestTune
+summary(step.model$finalModel)
+coef(step.model$finalModel, 4)
+test_model=lm(severity_score~cd4_ENSG00000130638.15 + cd8_ENSG00000115053.15 + nasal_ENSG00000198805.11 + cd8_ENSG00000075415.12, data=test_features_nona)
+summary(test_model)
+
+pred.r.squared <- pred_r_squared(test_model)
+pred.r.squared
+
+summary(fit_merged)
