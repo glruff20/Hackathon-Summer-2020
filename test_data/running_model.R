@@ -231,3 +231,56 @@ predictions_cd8=predict(fit_cd8, data.frame(test5))
 #these look pretty good, big negative is a lot of filler values from blank values
 
 predict(change_model, data.frame(test5))
+
+
+#cd8- fit
+
+summary(fit_cd8)
+
+cor_severe_cd8=cor(severe_cd8, use="pairwise.complete.obs")
+summary(cor_severe_cd8[,1])
+sig_cor_severe_cd8=subset(cor_severe_cd8, abs(cor_severe_cd8[1,])> 0.6)
+rownames(sig_cor_severe_cd8)=c("severity_score", paste("cd8", rownames(sig_cor_severe_cd8[-c(1),]), sep="_"))
+cd8_features=subset(severe_cd8, select=rownames(sig_cor_severe_cd8))
+
+#create a linear regression model from those data tables for each dataset
+fit_cd8=lm(severity_score ~., data=cd8_features)
+summary(fit_cd8)
+pred_r_squared(fit_cd8)
+
+
+cd8_predictions=predict(fit_cd8, data.frame(test5))
+cd8_predictions
+
+prediction=read.table("prediction.csv", sep=",")
+prediction=prediction[-c(1),]
+rownames(prediction)=prediction$V2
+test=merge(prediction, cd8_predictions, by=0, all.x=T, all.y=T, sort=F)
+test
+
+test2=cbind.data.frame(test$y, test$Row.names)
+head(test2)
+
+write.table(test2, file="cd8_predictions.csv", sep=",") #based off cd8 regression alone
+
+#looking at data ranges, distributions - test isn't uniform like training data is
+
+predict(fit_cd8, data.frame(test5))
+histogram(predict(fit_cd8, data.frame(test5)))
+
+histogram(merged_data[,1], freq=T)
+length(merged_data[,1])
+error=merged_data[,1]-5.23
+head(error)
+se = error^2
+head(se)
+mean(se)
+
+histogram(test2$`test$test_predictions`, breaks=10)
+
+histogram(predict(fit_merged, data.frame(merged_test_features_nona)), breaks=10)
+histogram(fit_merged$residuals, breaks=10)
+histogram(fit_cd8$residuals, breaks=12)
+mean(fit_cd8$residuals^2)          
+mean(fit_cd8$residuals)
+
