@@ -471,3 +471,43 @@ pred.r.squared
 ##adding values from greatest change btwn high and low severity didn't increase predicted r-square
 
 save(fit_merged, file="fit_merged.rda")
+
+
+#normalize merged data by z-score; make new regression model from that
+
+head(merged_data[,24650:24657])
+
+test=apply(merged_data[,-c(1)], 2, scale)
+head(test[,24650:24655])
+test2=cbind.data.frame(merged_data[,1], test)
+rownames(test2)=rownames(merged_data)
+head(test2[,1:5])
+merged_data_scaled=test2
+
+#replace NA's with 0 (assume patients equal, average expression)
+library(tidyr)
+merged_data_scaled[is.na(merged_data_scaled)]=0
+head(merged_data_scaled[,1:5])
+
+colnames(merged_data_scaled)=c("severity_score", colnames(merged_data_scaled[,-c(1)]))
+#calculate top correlated features now
+
+merged_cor_scaled=cor(merged_data_scaled, use="pairwise.complete.obs")
+summary(abs(merged_cor_scaled[,1]))
+quantile(abs(merged_cor_scaled[,1]), 0.995, na.rm=T)
+
+sig_cor_scaled=subset(merged_cor_scaled, abs(merged_cor_scaled[1,]) > 0.41)  #has the highest adjusted r-squared value
+dim(sig_cor_scaled)
+rownames(sig_cor_scaled)=c("severity_score", rownames(sig_cor_scaled[-c(1),]))
+sig_cor_scaled[,1]
+colnames(sig_cor_scaled)=c("severity_score", colnames(sig_cor_scaled[,-c(1)]))
+
+scaled_features=subset(merged_data_scaled, select=rownames(sig_cor_scaled))
+head(scaled_features)
+
+fit_scaled=lm(severity_score ~., data=scaled_features)
+summary(fit_scaled)
+
+pred_r_squared(fit_scaled) #predicted r square = 0.4447
+
+
