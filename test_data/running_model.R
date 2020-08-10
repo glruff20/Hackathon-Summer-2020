@@ -248,7 +248,6 @@ fit_cd8=lm(severity_score ~., data=cd8_features)
 summary(fit_cd8)
 pred_r_squared(fit_cd8)
 
-
 cd8_predictions=predict(fit_cd8, data.frame(test5))
 cd8_predictions
 
@@ -301,3 +300,16 @@ head(merged_test_data_scaled[,1:5])
 
 #predict with model
 scaled_predictions=predict(fit_scaled, data.frame(merged_test_data_scaled))
+
+prediction=read.table("prediction.csv", sep=",")
+head(prediction)
+prediction=prediction[-c(1),]
+rownames(prediction)=prediction$V2
+test=merge(prediction, scaled_predictions, by=0, all.x=T, all.y=T, sort=F)
+test
+
+test2=cbind.data.frame(test$y, test$Row.names)
+head(test2)
+
+write.table(test2, file="my_predictions4.csv", sep=",") #predictions_scaled
+#a couple high severity scores, moved them down (one was 14, went down to 7.8 i think)
