@@ -148,6 +148,11 @@ head(test4[,1:5])
 
 merged_test_data=test4 #severity is first column, rest of columns is rest of data
 
+test_no_nasal=subset(merged_test_data, is.na(merged_test_data$nasal_ENSG00000000003.14) & is.na(merged_test_data$`nasal_g__Actinomyces,s__`))
+rownames(test_no_nasal)
+rownames(test_predictions)
+subset(test_predictions, rownames(test_predictions) %in% c("125","130","142","181","188","206","225"))
+test_predictions
 #subset out only features used in regression model
 
 merged_test_features=subset(merged_test_data, select=rownames(sig_cor_merged[-c(1),]))
@@ -225,3 +230,4 @@ predict(fit_cd8, data.frame(test5))
 predictions_cd8=predict(fit_cd8, data.frame(test5))
 #these look pretty good, big negative is a lot of filler values from blank values
 
+predict(change_model, data.frame(test5))

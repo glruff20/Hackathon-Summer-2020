@@ -186,6 +186,21 @@ colnames(test)=c("severity_score", colnames(test[,-c(1)]))
 
 merged_data=test
 
+#see if patients show differences btwn each other if missing data
+no_cd8=subset(merged_data, is.na(merged_data$cd8_ENSG00000000419.12))
+histogram(no_cd8[,1]) #normal median
+no_cd4=subset(merged_data, is.na(merged_data$cd4_ENSG00000000419.12))
+histogram(no_cd4[,1]) #normal median
+no_cd19=subset(merged_data, is.na(merged_data$cd19_ENSG00000000419.12))
+summary(no_cd19[,1]) #normal median
+no_nasal_gene=subset(merged_data, is.na(merged_data$nasal_ENSG00000000003.14))
+histogram(no_nasal_gene[,1], breaks=8) #median about 6
+no_nasal_micro=subset(merged_data, is.na(merged_data$`nasal_g__Actinomyces,s__`))
+histogram(no_nasal_micro[,1], breaks=8) #median about 6
+
+no_nasal=subset(merged_data, is.na(merged_data$nasal_ENSG00000000003.14) & is.na(merged_data$`nasal_g__Actinomyces,s__`))
+histogram(no_nasal[,1], breaks=7) #median about 6
+
 #calculate correlations for each gene in gene expr tables, subset out top genes to use in regression model
 cor_merged=cor(merged_data, use="pairwise.complete.obs")
 summary(abs(cor_merged[,1]))
@@ -244,14 +259,19 @@ sig_cor_merged[,1]
 
 test=subset(test_features_nona, select=rownames(sig_cor_merged))
 head(test)
+plot(severity_score~., data=test)
 
 fit_merged=lm(severity_score ~., data=test)
 summary(fit_merged)
 
-fit_test=lm(severity_score ~., data=sig_features)
+fit_merged=lm(severity_score ~., data=sig_features)
 summary(fit_merged)
 plot(fit_merged)
 plot(fit_merged$residuals)
+
+pred.r.squared=pred_r_squared(fit_merged)
+pred.r.squared
+
 
 sig_features=test
 
@@ -387,3 +407,67 @@ pred.r.squared
 #other things to try: see if regression models from only one cell type are better than combined?
 
 save(merged_data, merged_bi_nasal, merged_test_data, file="merged_data_tables.rda")
+
+
+#separate patients based on severity
+summary(merged_data$severity_score)
+low_data=subset(merged_data, merged_data$severity_score<2.5)
+med_data=subset(merged_data, merged_data$severity_score>2.5 & merged_data$severity_score<6.5)
+high_data=subset(merged_data, merged_data$severity_score>6.5)
+head(low_data[,1:5])
+averages_data=colMeans(merged_data, na.rm=T)
+head(averages_data)
+
+logfc_low=log2(colMeans(low_data, na.rm=T)/averages_data)
+head(logfc_low)
+summary(logfc_low)
+quantile(abs(logfc_low), 0.995, na.rm=T)
+change_low=subset(logfc_low, abs(logfc_low)>1.98 & logfc_low !=-Inf)
+change_low
+
+logfc_med=log2(colMeans(med_data, na.rm=T)/averages_data)
+summary(logfc_med)
+
+logfc_high=log2(colMeans(high_data, na.rm=T)/averages_data)
+summary(logfc_high)
+quantile(abs(logfc_high), 0.995, na.rm=T)
+change_high=subset(logfc_high, abs(logfc_high)>2.12)
+head(change_high)
+change_high=subset(change_high, change_high !=-Inf)
+change_high
+
+change_features=subset(merged_data, select=c("severity_score", names(change_high), names(change_low)))
+head(change_features[,1:5])
+
+col_median=lapply(change_features, median, na.rm=T)
+test6=replace_na(change_features, col_median)
+
+change_cor=cor(test6)
+head(change_cor[,1:5])
+summary(change_cor[,1])
+sig_change_cor=subset(change_cor, abs(change_cor[,1]) > 0.28)
+sig_change_cor=subset(sig_change_cor, rownames(sig_change_cor)!="severity_score.1")
+sig_change_features=subset(test6, select=rownames(sig_change_cor))
+change_model=lm(severity_score~., data=sig_change_features)
+summary(change_model)
+
+head(sig_change_features)
+
+col_means <- lapply(merged_data, median, na.rm = TRUE)
+test1 <- replace_na(merged_data, col_means)
+head(test1)
+test_features_nona=test1
+
+test2=subset(test1, select=c(rownames(sig_cor_merged), "cd19_ENSG00000252614.1", "nasal_ENSG00000163958.13"))
+head(test2)
+plot(severity_score~., data=test2)
+
+fit_test=lm(severity_score ~., data=test2)
+summary(fit_test)
+
+pred.r.squared <- pred_r_squared(fit_test)
+pred.r.squared
+
+##adding values from greatest change btwn high and low severity didn't increase predicted r-square
+
+save(fit_merged, file="fit_merged.rda")
