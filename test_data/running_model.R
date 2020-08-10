@@ -284,3 +284,20 @@ histogram(fit_cd8$residuals, breaks=12)
 mean(fit_cd8$residuals^2)          
 mean(fit_cd8$residuals)
 
+#run scaled model - normalize data, sub in 0 for NA's, then run model
+
+head(merged_test_data[,1:5])
+test=apply(merged_test_data, 2, scale)
+
+head(test[,1:5])
+rownames(test)=rownames(merged_test_data)
+head(test[,1:5])
+merged_test_data_scaled=test
+
+#replace NA's with 0 (assume patients equal, average expression)
+library(tidyr)
+merged_test_data_scaled[is.na(merged_test_data_scaled)]=0
+head(merged_test_data_scaled[,1:5])
+
+#predict with model
+scaled_predictions=predict(fit_scaled, data.frame(merged_test_data_scaled))
