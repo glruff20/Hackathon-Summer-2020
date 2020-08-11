@@ -510,18 +510,8 @@ summary(fit_scaled)
 
 pred_r_squared(fit_scaled) #predicted r square = 0.4447
 
-write.table(colnames(merged_data), file="gene_names.txt")
-summary(fit_scaled)
-summary(fit_merged)
 
-test=merged_data[,c(1,7744)]
-test_order=test[order(test$severity_score),]
-plot(test)
-cor(test, use="pairwise.complete.obs")
-summary(subset(test[,2], test$severity_score < 3.5))
-summary(subset(test, test$cd4_ENSG00000120833.13 > 3.5))
-t.test(subset(test[,2], test$severity_score < 2.5), subset(test, test$cd4_ENSG00000120833.13 > 5))
-
+#look for genes that show clear patterns btwn high and low severity
 head(sig_change_features)
 head(change_high)
 head(sort(change_high))
@@ -529,4 +519,5 @@ head(sort(change_high))
 plot(merged_data[,c(1,merged_data$cd8_ENSG00000252641.2)])
 test=cbind.data.frame(merged_data[,1], merged_data$cd19_ENSG00000202538.1)
 plot(test)
-
+#all negatives gene exprs are above 2.5 severity, median 4.8
+#updated prediction file with those test data w/ a negative gene expr
