@@ -708,5 +708,6 @@ histogram(as.numeric(paste(predict[,1])), breaks=20)
 as.numeric(paste(predict[,1]))
 predict=predict[-c(1),]
 median(as.numeric(paste(predict[,1])))
-
+boxplot(as.numeric(paste(predict[,1])))
                   
+quantile(as.numeric(paste(predict[,1])), 0.9)
