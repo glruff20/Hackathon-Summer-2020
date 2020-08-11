@@ -512,7 +512,7 @@ pred_r_squared(fit_scaled) #predicted r square = 0.4447
 
 
 #look for genes that show clear patterns btwn high and low severity
-head(sig_change_features)
+head(sig_change_features, n=10)
 head(change_high)
 head(sort(change_high))
 
@@ -541,3 +541,21 @@ test=cbind.data.frame(merged_data[,1], merged_data$cd8_ENSG00000199824.1)
 plot(test)
 #highest one (huge outlier) had highest severity score
 
+test=cbind.data.frame(merged_data[,1], merged_data$cd19_ENSG00000252614.1)
+plot(test)
+#above 100, above 4.0
+
+test=cbind.data.frame(merged_data[,1], merged_data$nasal_ENSG00000163958.13)
+plot(test)
+#higher at least above 2.0
+
+sig_cor_merged[1,]
+
+test=cbind.data.frame(merged_data[,1], merged_data$cd4_ENSG00000136997.14)
+plot(test)
+
+test_fit=lm(severity_score~cd4_ENSG00000136997.14 + cd8_ENSG00000202078.1 + cd19_ENSG00000202538.1, data=merged_data_scaled)
+test_fit$residuals
+
+pred_r_squared(test_fit)
+predict(test_fit, data.frame(test5))
