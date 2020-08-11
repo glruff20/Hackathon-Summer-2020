@@ -704,7 +704,7 @@ save
 predict=read.table("prediction.csv", sep=",")
 head(predict)
 predict=predict[-c(1),]
-histogram(as.numeric(paste(predict[,1])), breaks=20)
+histogram(as.numeric(paste(predict[,1])), breaks=30)
 as.numeric(paste(predict[,1]))
 predict=predict[-c(1),]
 median(as.numeric(paste(predict[,1])))
@@ -713,7 +713,9 @@ boxplot(as.numeric(paste(predict[,1])))
 quantile(as.numeric(paste(predict[,1])), 0.9)
 
 boxplot(merged_data[,1])
-histogram(merged_data[,1], breaks=20)
+histogram(merged_data[,1], breaks=30, freq=T)
 median(merged_data[,1])
 quantile(merged_data[,1],.25)
 quantile(merged_data[,1],.75)
+
+test=subset(merged_data, merged_data[,1]>9.5)
