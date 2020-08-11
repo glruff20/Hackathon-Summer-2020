@@ -711,3 +711,9 @@ median(as.numeric(paste(predict[,1])))
 boxplot(as.numeric(paste(predict[,1])))
                   
 quantile(as.numeric(paste(predict[,1])), 0.9)
+
+boxplot(merged_data[,1])
+histogram(merged_data[,1], breaks=20)
+median(merged_data[,1])
+quantile(merged_data[,1],.25)
+quantile(merged_data[,1],.75)
