@@ -314,11 +314,6 @@ head(test2)
 write.table(test2, file="my_predictions4.csv", sep=",") #predictions_scaled
 #a couple high severity scores, moved them down (one was 14, went down to 7.8 i think)
 
-test2=cbind.data.frame(merged_test_data$cd19_ENSG00000202538.1, merged_test_data[,1])
-head(test2)
-head(merged_test_data[,1:5])
+test2=cbind.data.frame(merged_test_data$cd8_ENSG00000199824.1, merged_test_data$cd19_ENSG00000202538.1, merged_test_data$cd8_ENSG00000202078.1, merged_test_data$cd8_ENSG00000279340.1)
 rownames(test2)=rownames(merged_test_data)
-head(test2, na.rm=T)
 test2
-
-summary(subset(merged_data[,1], merged_data$cd19_ENSG00000202538.1 < -5))

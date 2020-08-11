@@ -516,8 +516,28 @@ head(sig_change_features)
 head(change_high)
 head(sort(change_high))
 
-plot(merged_data[,c(1,merged_data$cd8_ENSG00000252641.2)])
 test=cbind.data.frame(merged_data[,1], merged_data$cd19_ENSG00000202538.1)
 plot(test)
 #all negatives gene exprs are above 2.5 severity, median 4.8
 #updated prediction file with those test data w/ a negative gene expr
+
+
+
+#look for other genes showing patterns in severity score
+head(sort(change_low)[-c(1:20)])
+test=cbind.data.frame(merged_data[,1], merged_data$cd8_ENSG00000202078.1)
+plot(test)
+#super high (>100) - above 4.5
+
+test=cbind.data.frame(merged_data[,1], merged_data$cd8_ENSG00000279340.1)
+plot(test)
+#>50 range btwn 4 and 6.5
+
+test=cbind.data.frame(merged_data[,1], merged_data$cd19_ENSG00000227470.1)
+plot(test)
+#when up, above 4.0
+
+test=cbind.data.frame(merged_data[,1], merged_data$cd8_ENSG00000199824.1)
+plot(test)
+#highest one (huge outlier) had highest severity score
+
