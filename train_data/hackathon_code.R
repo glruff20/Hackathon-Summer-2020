@@ -559,3 +559,145 @@ test_fit$residuals
 
 pred_r_squared(test_fit)
 predict(test_fit, data.frame(test5))
+
+
+library(umap)
+umap=umap(test_features_nona, n_neighbors=7)
+plot(umap$layout)
+head(umap$layout)
+head(merged_features)
+
+umapplot = ggplot(data = data.frame(umap$layout), aes(x = X1, y = X2) ) + geom_point(aes(colour = scale(as.numeric(test_features_nona[,5]))), size = 5) + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.y = element_text(size = 18, colour = 'black'),
+        axis.text.x = element_text(size = 18, colour = 'black'),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 18)) + 
+  
+  #guides(colour=guide_legend(title=legendtitle)) +
+  labs(colour = "Severity Score") + #scale_colour_distiller(palette = "Spectral")
+  scale_colour_gradient(low="grey", high="red")
+
+umapplot
+
+
+head(test_features_nona[,1:5])
+head(test_umap_features[,1:5])
+test_umap_features=subset(test5, select=colnames(test_features_nona[,-c(1)]))
+umap_test=umap(test_umap_features, n_neighbors=7)
+plot(umap_test$layout)
+
+umapplot = ggplot(data = data.frame(umap_test$layout), aes(x = X1, y = X2) ) + geom_point(aes(colour = scale(as.numeric(test_umap_features[,4]))), size = 5) + 
+  theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        axis.text.y = element_text(size = 18, colour = 'black'),
+        axis.text.x = element_text(size = 18, colour = 'black'),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18),
+        legend.title = element_text(size = 18),
+        legend.text = element_text(size = 18)) + 
+  
+  #guides(colour=guide_legend(title=legendtitle)) +
+  labs(colour = "Severity Score") + #scale_colour_distiller(palette = "Spectral")
+  scale_colour_gradient(low="grey", high="red")
+
+umapplot
+
+
+
+#running lasso regression
+library(caret)
+library(glmnet)
+
+ytrain=merged_data[,1]
+xtrain=as.matrix(merged_data_scaled[,-c(1)])
+
+lasso_cv=cv.glmnet(xtrain, ytrain, family="gaussian", alpha=1)
+head(coef(lasso_cv), n=100)
+plot(lasso_cv)
+best_lambda=lasso_cv$lambda.min
+cat(best_lambda)
+lasso_mod=glmnet(xtrain, ytrain, family="gaussian", alpha=1, lambda=best_lambda)
+coef(lasso_mod)
+
+yhat=predict(lasso_mod, xtest)
+head(yhat)
+
+yhat
+
+test_test=merged_data_scaled[10:58,]
+test_train=merged_data_scaled[c(1:9,59:77),]
+
+ytrain=test_train[,1]
+xtrain=as.matrix(test_train[,-c(1)])
+
+ytest=test_test[,1:2]
+xtest=as.matrix(test_test[,-c(1)])
+
+mse=mean((ytest-yhat)^2)
+mse
+yhat
+ytest
+result=cbind.data.frame(ytest[,1],yhat)
+result
+
+
+#lasso w/ features already deemed significant correlations
+test_test=scaled_features[10:58,]
+test_train=scaled_features[c(1:9,59:77),]
+
+ytrain=test_train[,1]
+xtrain=as.matrix(test_train[,-c(1)])
+
+ytest=test_test[,1:2]
+xtest=as.matrix(test_test[,-c(1)])
+
+lasso_cv=cv.glmnet(xtrain, ytrain, family="gaussian", alpha=.5)
+coef(lasso_cv)
+plot(lasso_cv)
+best_lambda=lasso_cv$lambda.min
+cat(best_lambda)
+lasso_mod=glmnet(xtrain, ytrain, family="gaussian", alpha=.5, lambda=best_lambda)
+coef(lasso_mod)
+
+yhat=predict(lasso_mod, xtest)
+head(yhat)
+
+yhat
+
+
+mse=mean((ytest[,1]-yhat)^2)
+mse
+yhat
+ytest
+result=cbind.data.frame(ytest[,1],yhat)
+result
+
+plot=cbind.data.frame(scaled_features[,1], scaled_features$cd4_ENSG00000130638.15)
+plot(plot)
+
+plot1=cbind.data.frame(scaled_features[,1], scaled_features$cd8_ENSG00000099860.8)
+plot(plot1)
+
+plot2=cbind.data.frame(scaled_features[,1], scaled_features$cd8_ENSG00000164104.11)
+plot(plot2)
+
+plot3=cbind.data.frame(scaled_features[,1], scaled_features$nasal_ENSG00000005249.12)
+plot(plot3)
+
+plot4=cbind.data.frame(scaled_features[,1], scaled_features$nasal_ENSG00000148834.12)
+plot(plot4)
+
+plot5=cbind.data.frame(scaled_features[,1], scaled_features$nasal_ENSG00000174695.9)
+plot(plot5)
+
+lasso_test=lm(severity_score~cd4_ENSG00000130638.15+cd8_ENSG00000099860.8+cd8_ENSG00000164104.11+nasal_ENSG00000005249.12+nasal_ENSG00000148834.12+nasal_ENSG00000174695.9, data=scaled_features)
+summary(lasso_test)
+pred_r_squared(lasso_test)
+
+save=predict(lasso_test, data.frame(merged_test_data_scaled))
+save
+
