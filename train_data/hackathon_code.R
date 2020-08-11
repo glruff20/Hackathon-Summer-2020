@@ -510,4 +510,7 @@ summary(fit_scaled)
 
 pred_r_squared(fit_scaled) #predicted r square = 0.4447
 
+write.table(colnames(merged_data), file="gene_names.txt")
+summary(fit_scaled)
+summary(fit_merged)
 
