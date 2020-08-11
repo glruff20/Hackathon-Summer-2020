@@ -514,3 +514,19 @@ write.table(colnames(merged_data), file="gene_names.txt")
 summary(fit_scaled)
 summary(fit_merged)
 
+test=merged_data[,c(1,7744)]
+test_order=test[order(test$severity_score),]
+plot(test)
+cor(test, use="pairwise.complete.obs")
+summary(subset(test[,2], test$severity_score < 3.5))
+summary(subset(test, test$cd4_ENSG00000120833.13 > 3.5))
+t.test(subset(test[,2], test$severity_score < 2.5), subset(test, test$cd4_ENSG00000120833.13 > 5))
+
+head(sig_change_features)
+head(change_high)
+head(sort(change_high))
+
+plot(merged_data[,c(1,merged_data$cd8_ENSG00000252641.2)])
+test=cbind.data.frame(merged_data[,1], merged_data$cd19_ENSG00000202538.1)
+plot(test)
+
