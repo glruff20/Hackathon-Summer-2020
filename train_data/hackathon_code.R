@@ -701,7 +701,7 @@ pred_r_squared(lasso_test)
 save=predict(lasso_test, data.frame(merged_test_data_scaled))
 save
 
-predict=read.table("prediction.csv", sep=",")
+predict=read.table("prediction_6.2.csv", sep=",")
 head(predict)
 predict=predict[-c(1),]
 histogram(as.numeric(paste(predict[,1])), breaks=30)
