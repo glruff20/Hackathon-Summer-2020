@@ -724,3 +724,30 @@ subset(merged_data, rownames(merged_data) %in% c("134", "215", "219"))
 
 histogram(c(.4,.4,rep(.75,5), rep(1.25,6),rep(1.75,3), rep(2.25,3), 2.75,3.25,3.25,3.75,4.75,4.75,4.75,5.25,rep(5.57,5),rep(6.25,4), rep(6.75,4), rep(7.25,3), 8.4,8.4,8.6,8.6,8.6,9.25,9.75), breaks=20)
 save
+
+#find predictors of cutoff from below and above 4
+
+low_severity=subset(test1, test1[,1]<4)
+high_severity=subset(test1, test1[,1]>4)
+head(merged_data[,1:5])
+
+
+head(colMeans(merged_data_scaled, na.rm=T))
+
+logfc_high=log2(colMeans(high_severity, na.rm=T)/colMeans(low_severity, na.rm=T))
+quantile(abs(logfc_high), 0.999, na.rm=T)
+
+sig_diff=subset(logfc_high, abs(logfc_high)>1.8)
+head(sig_diff)
+
+sig_diff_data=subset(test1, select=names(sig_diff))
+head(sig_diff_data)
+plot(severity_score~., data=sig_diff_data)
+
+col_means <- lapply(merged_data, median, na.rm = TRUE)
+test1 <- replace_na(merged_data, col_means)
+head(test1[,1:5])
+test_features_nona=test1
+
+#look at test data
+subset(merged_test_data, select=c(cd19_ENSG00000202231.1, cd4_ENSG00000200247.1, nasal_ENSG00000199460.2, nasal_ENSG00000200403.1))
