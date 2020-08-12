@@ -720,4 +720,4 @@ quantile(merged_data[,1],.75)
 
 test=subset(merged_data, merged_data[,1]>9.5)
 
-head(no_)
+subset(merged_data, rownames(merged_data) %in% c("134", "215", "219"))
