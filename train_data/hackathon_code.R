@@ -721,3 +721,6 @@ quantile(merged_data[,1],.75)
 test=subset(merged_data, merged_data[,1]>9.5)
 
 subset(merged_data, rownames(merged_data) %in% c("134", "215", "219"))
+
+histogram(c(.4,.4,rep(.75,5), rep(1.25,6),rep(1.75,3), rep(2.25,3), 2.75,3.25,3.25,3.75,4.75,4.75,4.75,5.25,rep(5.57,5),rep(6.25,4), rep(6.75,4), rep(7.25,3), 8.4,8.4,8.6,8.6,8.6,9.25,9.75), breaks=20)
+save
